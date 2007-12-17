@@ -1,0 +1,45 @@
+DESCRIPTION="library and utility programs to manipulate jpeg format images"
+HOMEPAGE="http://www.ijg.org/"
+
+CVS_URI=":pserver:anonymous@libjpeg.cvs.sourceforge.net:/cvsroot/libjpeg"
+CVS_MODULE=lib${PN}
+CVS_DATE="2006-03-01"
+
+inherit cvs
+
+SRC_URI+="
+    ftp://ftp.simplesystems.org/pub/ImageMagick/delegates/ljpeg-${PV}.tar.gz
+	jpegv6b-loslesscrop-after-ljpeg-debian.tar.bz2
+"
+
+abi=62
+PKG_NAMES="${PN} libjpeg-devel libjpeg${abi}"
+PKG_HINTS="setup libjpeg-devel libjpeg${abi}"
+PKG_CONTENTS[0]="--exclude=usr/bin/*.dll usr/bin usr/share/"
+PKG_CONTENTS[1]='usr/include usr/lib'
+PKG_CONTENTS[2]="usr/bin/*-${abi}.dll"
+
+DIFF_EXCLUDES='jconfig.h*'
+
+CYGPORT_USE_UNSTABLE_API=1
+
+src_unpack_hook() {
+	cygpatch ../ljpeg-6b.patch
+	cygpatch ../100_crop.patch
+	cygpatch ../200_crop_man.patch
+	cygpatch ../201_rdjpgcom_locale.patch
+	cygpatch ../202_jpeglib.h_c++.patch
+	cygpatch ../203_rdppm.patch
+	cygpatch ../204_exif_extra.patch
+
+	# for tests
+	mv ../testimgl* .
+
+	# libtool.m4 will conflict with libtoolize
+	rm -f m4/*
+}
+
+CPPFLAGS+=" -DUSE_FDOPEN"
+MAKEOPTS+=" -j1"
+
+DOCS="*.doc example.c"
